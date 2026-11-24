@@ -23,6 +23,7 @@
         {% if section in ['pairs','loss','design'] %}{% include 'observations.html' %}{% endif %}
       {% endif %}
       {% if section in ['archive','certificate'] %}{% include 'archive.html' %}{% endif %}
+      {% if section == 'review' %}{% include 'review.html' %}{% endif %}
     </main>
     <footer><span>{{ spec }}</span><span>基准 A → B · m / dB</span><a href="/healthz">探测状态</a></footer>
   </div>

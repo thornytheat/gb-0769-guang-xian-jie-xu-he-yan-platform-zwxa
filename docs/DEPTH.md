@@ -14,6 +14,7 @@
 | M5 设计与实测对账 | 核对逐接头是否缺证 | POST /api/design | `app/modules/design/service.py` | `tests/test_design.py` |
 | M6 批次留档复跑 | 留档和重跑同一轨迹组 | POST /api/inspections | `app/modules/archive/storage.py` | `tests/test_archive.py` |
 | M7 光纤证据签发 | 复核签发条件并下载 | GET /api/certificate/<id> | `app/modules/certificate/service.py` | `tests/test_certificate.py` |
+| M8 外检报告复核 | 逐条对账报告结论与现场复算 | POST /api/inspections/<id>/reviews | `app/modules/report/reconcile.py` `app/modules/review/service.py` | `tests/test_report.py` `tests/test_report_reconcile.py` `tests/test_review.py` |
 
 ## 陷阱登记
 
@@ -28,6 +29,10 @@
 | TRAP-15 | A-02 米和千米并存 | 两条虚假轨迹 | 归一毫米后比对 | `app/modules/trace/units.py` | `tests/test_trace.py::test_equivalent_units_dedupe` |
 | TRAP-19 | A100 可匹配 B97 或 B101 | 最近优先导致 A105 无法配对 | 先最大配对数再最小间差 | `app/modules/pairs/optimal.py` | `tests/test_pairs.py::test_global_pairing_beats_greedy_and_keeps_competition` |
 | TRAP-21 | A700 和 B820 均无对侧 | 只报一端孤测 | 分别记录缺 A 或缺 B | `app/modules/pairs/service.py` | `tests/test_pairs.py::test_opposite_ends_missing_in_both_directions` |
+| TRAP-22 | 报告只留三位小数 | 拿四位现场值直接比报告值，全部对不上 | 现场净损耗折回毫 dB 后按半进到三位再比 | `app/modules/report/reader.py` | `tests/test_report.py::test_field_value_rounds_half_up_to_report_precision` |
+| TRAP-23 | 报告判合格、现场超限 | 只比数值忽略结论，超限接头被放行 | 结论冲突单独成类并阻塞签发 | `app/modules/report/reconcile.py` | `tests/test_report_reconcile.py::test_report_pass_but_field_over_limit_blocks_release` |
+| TRAP-24 | 报告有接头、现场无双端证据 | 直接采信报告合格结论 | 标记缺现场证据，报告结论不可直接采信 | `app/modules/report/reconcile.py` | `tests/test_report_reconcile.py::test_missing_field_evidence_cannot_trust_report_conclusion` |
+| TRAP-25 | 同一报告反复提交 | 每次重试新增一条复核项 | 复核身份含报告 SHA-256，命中即复用 | `app/modules/review/service.py` | `tests/test_review.py::test_review_api_idempotent_for_same_report` |
 
 ## 对账规则
 
@@ -36,3 +41,17 @@
 - F-01 双向均值 (−0.100+0.300)/2=0.1000 dB，F-03 为 (0.33+0.31)/2=0.3200 dB，超出 0.200 dB。
 
 输入为设备导出的事件表。二进制曲线解码、坡度自校与电子签章未纳入该工作台。
+
+## 外检报告复核规则
+
+- 报告 CSV 必填 `joint,loss_db,verdict`，损耗只保留三位小数；超过三位、坏数值、未知结论、同键冲突均按原行隔离，不进入对账。
+- 现场净损耗（两倍毫 dB）折成毫 dB 后按 ROUND_HALF_UP 回到三位小数，再与报告值比较。
+- 逐条对账六类结论：
+  - `CONSISTENT` 舍入一致：报告值等于现场三位舍入且结论一致，差异仅舍入，报告结论采信，不算造假。
+  - `VALUE_MISMATCH` 数值不符：三位舍入后损耗仍对不上，报告数据不可采信。
+  - `VERDICT_CONFLICT` 结论冲突：报告与现场合格性相反（典型为报告合格、现场超限），不得按报告放行。
+  - `EVIDENCE_MISSING` 缺现场证据：报告列示但现场无双端耦合证据（单端/缺证/越界），报告结论不可直接采信，须补证。
+  - `REPORT_MISSING` 报告漏列：现场有复算结论而报告未列该接头。
+  - `REPORT_ROW_INVALID` 报告坏行：该接头报告原行已隔离，无法对账。
+- 除 `CONSISTENT` 外五类均为阻塞项，任一存在则整批 `handover_ready=false`，签发件追加 `REPORT_*` 阻塞码。
+- 复核身份 `sha256(规则, 链路核验编号, 报告 SHA-256)`；同一报告重试命中同一编号，复用首次复核，不新增复核项。

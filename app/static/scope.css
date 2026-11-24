@@ -24,8 +24,9 @@ table { width:100%; border-spacing:0; text-align:left; }
 th,td { padding:7px 11px; white-space:nowrap; border-bottom:1px solid var(--line); }
 th { background:var(--surface-2); position:sticky; top:0; z-index:1; }
 [data-event]:focus { outline:2px solid var(--accent); outline-offset:-2px; background:#3b2b52; }
-[data-state=PASS] { color:var(--ok); } [data-state=OVER_LIMIT],.issue { color:var(--bad); }
-[data-state=SINGLE_SIDE_ONLY], [data-state=NO_COUPLED_EVIDENCE], [data-state=INVALID_NET_GAIN], [data-state=DESIGN_OUTSIDE_LINK] { color:var(--warn); }
+[data-state=PASS], [data-state=CONSISTENT] { color:var(--ok); } [data-state=OVER_LIMIT],.issue { color:var(--bad); }
+[data-state=SINGLE_SIDE_ONLY], [data-state=NO_COUPLED_EVIDENCE], [data-state=INVALID_NET_GAIN], [data-state=DESIGN_OUTSIDE_LINK], [data-state=EVIDENCE_MISSING] { color:var(--warn); }
+[data-state=VALUE_MISMATCH], [data-state=VERDICT_CONFLICT], [data-state=REPORT_MISSING], [data-state=REPORT_ROW_INVALID] { color:var(--bad); }
 #focus-event { display:block; font-size:11px; min-height:15px; color:var(--accent); padding:0 var(--pad); }
 .archive p,.download { margin:8px var(--pad); }
 .hash { overflow-wrap:anywhere; color:var(--muted); }

@@ -1,0 +1,41 @@
+<section class="panel archive">
+  <h3>$ 外检报告复核留档</h3>
+  {% if review_doc %}
+  <p role="status">{{ '已建立复核' if review_fresh else '同一报告重试，复用既有复核（不新增复核项）' }} {{ review_doc.review_id[:12] }}</p>
+  <p class="result" data-state="{{ 'PASS' if review_doc.handover_ready else 'OVER_LIMIT' }}">{{ '整批可交' if review_doc.handover_ready else '整批不可交' }} · {{ review_doc.blockers|join(' / ') if review_doc.blockers else '无阻塞项' }}</p>
+  {% endif %}
+  <div class="sheet"><table><thead><tr><th>复核编号</th><th>链路核验</th><th>结论</th><th>阻塞项</th></tr></thead><tbody>
+  {% for item in review_entries %}<tr><td>{{ item.review_id[:15] }}</td><td>{{ item.inspection_id[:12] }}</td><td class="result" data-state="{{ 'PASS' if item.handover_ready else 'OVER_LIMIT' }}">{{ '可交' if item.handover_ready else '不可交' }}</td><td>{{ item.blockers|join(' / ') if item.blockers else '—' }}</td></tr>
+  {% else %}<tr><td colspan="4">先在「批次留档复跑」留档，再提交外检报告生成复核。</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% if review_doc %}
+<section class="panel events" id="evidence-grid">
+  <div class="title-line"><h3>$ 报告结论与现场复算逐条对账</h3>
+  <div class="keys"><button type="button" id="event-prev"><kbd>K</kbd> 上一条</button><button type="button" id="event-next"><kbd>J</kbd> 下一条</button></div></div>
+  <section class="panel stats"><dl class="kpis">
+    <div><dt>对账接头</dt><dd>{{ review_doc.reconciliation.joint_count }}</dd></div>
+    <div><dt>舍入一致采信</dt><dd>{{ review_doc.reconciliation.CONSISTENT }}</dd></div>
+    <div><dt>数值不符</dt><dd>{{ review_doc.reconciliation.VALUE_MISMATCH }}</dd></div>
+    <div><dt>结论冲突</dt><dd>{{ review_doc.reconciliation.VERDICT_CONFLICT }}</dd></div>
+    <div><dt>缺现场证据</dt><dd>{{ review_doc.reconciliation.EVIDENCE_MISSING }}</dd></div>
+    <div><dt>报告漏列</dt><dd>{{ review_doc.reconciliation.REPORT_MISSING }}</dd></div>
+    <div><dt>报告坏行</dt><dd>{{ review_doc.reconciliation.REPORT_ROW_INVALID }}</dd></div>
+  </dl></section>
+  <div class="sheet"><table><thead><tr><th>接头 / 报告行</th><th>报告值 (dB)</th><th>报告结论</th><th>现场复算 (dB)</th><th>现场结论</th><th>对账</th><th>说明</th></tr></thead><tbody>
+  {% for row in review_doc.reconciliation.rows %}<tr tabindex="0" data-event="{{ row.joint }}">
+    <td>{{ row.joint }} {{ '#' ~ row.report_line if row.report_line else '' }}</td>
+    <td class="num">{{ '%.3f'|format(row.report_loss_mdb / 1000) if row.report_loss_mdb is not none else '—' }}</td>
+    <td>{{ codes[row.report_verdict] if row.report_verdict else '—' }}</td>
+    <td class="num">{{ row.field_net_db or '—' }}</td>
+    <td>{{ codes[row.field_code] if row.field_code else '—' }}</td>
+    <td class="result" data-state="{{ row.reconcile_code }}">{{ codes[row.reconcile_code] }}</td>
+    <td>{{ row.note }}</td>
+  </tr>{% endfor %}
+  </tbody></table></div>
+  <output id="focus-event" aria-live="polite"></output>
+</section>
+{% if review_doc.reconciliation.report_isolated %}<section class="panel exceptions"><h3>$ 报告原行隔离</h3><div class="sheet"><table><thead><tr><th>行号</th><th>原因</th><th>原值</th></tr></thead><tbody>
+{% for row in review_doc.reconciliation.report_isolated %}<tr><td>{{ row.line }}</td><td>{{ row.code }}</td><td>{{ row.raw|join(' / ') }}</td></tr>{% endfor %}
+</tbody></table></div></section>{% endif %}
+{% endif %}
