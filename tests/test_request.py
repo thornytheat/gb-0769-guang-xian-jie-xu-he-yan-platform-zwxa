@@ -1,0 +1,8 @@
+def test_inputs_require_three_sources(client):
+    response = client.post('/api/trace',json={'traces':{'a':''}})
+    assert (response.status_code,response.json['code']) == (400,'THREE_TRACES_REQUIRED')
+
+
+def test_ingest_does_not_need_calibration(client):
+    assert client.post('/api/trace',json={'sample':'dirty','settings':None}).json['counts']['a']['isolated'] == 5
+    assert client.post('/api/calibration',json={'sample':'dirty','settings':None}).status_code == 422

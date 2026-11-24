@@ -1,0 +1,7 @@
+<section class="panel scopes">
+  <div class="title-line"><h3>$ 双端轨迹帧</h3><span>A 起偏 {{ data.calibration.settings.zero_a_mm|metres }} m · B 起偏 {{ data.calibration.settings.zero_b_mm|metres }} m</span></div>
+  {% for side, rows in frames.items() %}<div class="frame"><strong>{{ side|upper }} {{ '→' if side == 'a' else '←' }}</strong><div class="axis" aria-label="{{ side|upper }} 端链程">
+    {% for row in rows %}<span class="mark" style="--left:{{ row.mark }}%" title="{{ row.id }} · {{ row.chain_mm|metres }} m · #{{ row.line }}"></span>{% endfor %}
+  </div><span>{{ rows|length }} 点</span></div>{% endfor %}
+  <div class="ruler"><span>0 m</span><span>{{ data.calibration.settings.length_mm|metres }} m</span></div>
+</section>

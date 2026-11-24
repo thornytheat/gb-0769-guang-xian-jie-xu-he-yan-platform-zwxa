@@ -1,0 +1,6 @@
+<section class="panel archive">
+  <h3>{{ '$ 运行快照' if section == 'archive' else '$ 签发核验' }}</h3>
+  {% if issued %}<p role="status">{{ '已归档' if fresh else '复用首次运行' }} {{ issued.inspection_id[:12] }}</p>{% endif %}
+  {% if evidence %}<p class="result" data-state="{{ 'PASS' if evidence.approved else 'OVER_LIMIT' }}">{{ '可签发' if evidence.approved else '待处置' }} · {{ evidence.blockers|join(' / ') }}</p><p class="hash">{{ evidence.integrity_sha256 }}</p><a class="download" href="/api/export/{{ evidence.inspection_id }}">下载核验证据</a>{% endif %}
+  <div class="sheet"><table><thead><tr><th>核验编号</th><th>时间 UTC</th><th>版本</th><th>耗时 (ms)</th></tr></thead><tbody>{% for entry in entries %}<tr><td><a href="/inspect/certificate?inspection={{ entry.inspection_id }}">{{ entry.inspection_id[:15] }}</a></td><td>{{ entry.generated_at }}</td><td>{{ entry.rule }}</td><td>{{ entry.duration_ms }}</td></tr>{% else %}<tr><td colspan="4"><a href="/inspect/archive">先留档一次链路核验。</a></td></tr>{% endfor %}</tbody></table></div>
+</section>

@@ -1,0 +1,22 @@
+:root {
+  color-scheme: dark;
+  --bg: #181225;
+  --surface: #21182f;
+  --surface-2: #302343;
+  --ink: #f0e9fb;
+  --muted: #baaccb;
+  --line: #49375e;
+  --line-strong: #7659a1;
+  --accent: #b579f9;
+  --accent-ink: #160c24;
+  --ok: #95e3b3;
+  --warn: #f0c57d;
+  --bad: #ff9eaa;
+  --info: #a69db8;
+  --mono: 'SFMono-Regular',Consolas,'Noto Sans Mono CJK SC',monospace;
+  --edge: 0px;
+  --pad: 15px;
+  --gutter: 16px;
+  --ray-a: #bb8fff;
+  --ray-b: #e2adff;
+}

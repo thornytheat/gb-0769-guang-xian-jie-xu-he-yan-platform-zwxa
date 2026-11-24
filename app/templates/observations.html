@@ -1,0 +1,24 @@
+{% set design = data.design %}{% set loss = data.loss %}{% set pairs = data.pairs %}
+<section class="panel stats">
+  <dl class="kpis">
+    {% if design %}<div><dt>设计点</dt><dd>{{ design.design_count }}</dd></div><div><dt>耦合通过</dt><dd>{{ design.passed }}</dd></div><div><dt>超限</dt><dd>{{ design.over_limit }}</dd></div><div><dt>缺证</dt><dd>{{ design.missing }}</dd></div><div><dt>孤配</dt><dd>{{ design.orphan_pairs }}</dd></div>
+    {% else %}<div><dt>双端配对</dt><dd>{{ pairs.pair_count }}</dd></div><div><dt>单端孤测</dt><dd>{{ pairs.single_count }}</dd></div><div><dt>总间差 m</dt><dd>{{ pairs.total_span_mm|metres }}</dd></div>{% if loss %}<div><dt>单向增益</dt><dd>{{ loss.false_gain_count }}</dd></div><div><dt>参考超限</dt><dd>{{ loss.over_count }}</dd></div>{% endif %}{% endif %}
+  </dl>
+</section>
+<section class="panel events" id="evidence-grid">
+  <div class="title-line"><h3>{{ '$ 接头设计勾稽' if design else '$ 双向损耗证据' if loss else '$ 单调配对证据' }}</h3>
+  <div class="keys"><button type="button" id="event-prev"><kbd>K</kbd> 上一条</button><button type="button" id="event-next"><kbd>J</kbd> 下一条</button></div></div>
+  <div class="sheet"><table><thead>
+  {% if design %}<tr><th>设计点 / 行</th><th>链程 (m)</th><th>配对</th><th>A / B 行</th><th>净损耗 (dB)</th><th>上限 (dB)</th><th>核验</th></tr>
+  {% else %}<tr><th>配对</th><th>A 端 / 行</th><th>B 端 / 行</th><th>中点 (m)</th><th>间差 (m)</th>{% if loss %}<th>A / B (dB)</th><th>净损耗 (dB)</th><th>核验</th>{% else %}<th>B 候选</th>{% endif %}</tr>{% endif %}
+  </thead><tbody>
+  {% if design %}{% for item in design.rows %}<tr tabindex="0" data-event="{{ item.joint }}"><td>{{ item.joint }} #{{ item.design_line }}</td><td class="num">{{ item.chain_mm|metres }}</td><td>{{ item.pair or '—' }}</td><td>{{ item.a_line or '—' }} / {{ item.b_line or '—' }}{% for row in item.near_singles %} · {{ row.id }} #{{ row.line }}{% endfor %}</td><td class="num">{{ item.net_db or '—' }}</td><td class="num">{{ item.limit_mdb|metres }}</td><td class="result" data-state="{{ item.code }}">{{ codes[item.code] }}</td></tr>{% else %}<tr><td colspan="7">补充设计接头清单。</td></tr>{% endfor %}
+  {% else %}{% for item in (loss.rows if loss else pairs.pairs) %}<tr tabindex="0" data-event="{{ item.pair }}"><td>{{ item.pair }}</td><td>{{ item.a.id }} #{{ item.a.line }}</td><td>{{ item.b.id }} #{{ item.b.line }}</td><td class="num">{{ item.midpoint_half_mm|half_mm_metres }}</td><td class="num">{{ item.span_mm|metres }}</td>
+   {% if loss %}<td class="num">{{ item.a.loss_mdb|metres }} / {{ item.b.loss_mdb|metres }}</td><td class="num">{{ item.net_db }}</td><td class="result" data-state="{{ item.code }}">{{ codes[item.code] }}{% if item.gain_ends %} · {{ item.gain_ends|join('/') }} 端假增益{% endif %}</td>{% else %}<td>{{ item.possible_b|join(' · ') }}</td>{% endif %}</tr>{% else %}<tr><td colspan="8">补齐双端轨迹后核验。</td></tr>{% endfor %}{% endif %}
+  </tbody></table></div>
+  <output id="focus-event" aria-live="polite"></output>
+</section>
+<section class="panel exceptions"><h3>$ 孤配与单端证据</h3><div class="sheet"><table><thead><tr><th>记录</th><th>原件与行</th><th>链程 (m)</th><th>原因</th></tr></thead><tbody>
+{% if design %}{% for row in design.orphans %}<tr><td>{{ row.pair }}</td><td>{{ row.a.id }} #{{ row.a.line }} / {{ row.b.id }} #{{ row.b.line }}</td><td class="num">{{ row.midpoint_half_mm|half_mm_metres }}</td><td>NO_DESIGN_MATCH</td></tr>{% endfor %}{% endif %}
+{% for row in pairs.singles %}<tr><td>{{ row.id }}</td><td>{{ row.source|upper }} #{{ row.line }}</td><td class="num">{{ row.chain_mm|metres }}</td><td>{{ row.code }}</td></tr>{% else %}{% if not (design and design.orphans) %}<tr><td colspan="4">没有孤配与单端记录。</td></tr>{% endif %}{% endfor %}
+</tbody></table></div></section>

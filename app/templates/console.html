@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ labels[section] }} · 光纤接续核验台</title>
+  {% for stylesheet in ('theme', 'terminal', 'scope') %}<link rel="stylesheet" href="/static/{{ stylesheet }}.css">{% endfor %}
+  <script defer src="/static/inspect.js"></script>
+</head>
+<body>
+  <aside class="rail">
+    <a class="console-mark" href="/"><span aria-hidden="true">&gt;_</span><h1>光纤接续核验台</h1></a>
+    <nav aria-label="光路模块">{% for key,title in labels.items() %}<a href="/inspect/{{ key }}{% if mode == 'clean' %}?sample=clean{% endif %}" {% if key == section %}aria-current="page"{% endif %}><span aria-hidden="true">›</span> {{ title }}</a>{% endfor %}</nav>
+    <span class="rail-end">A ↔ B / OTDR</span>
+  </aside>
+  <div class="work">
+    <header><h2>{{ labels[section] }}</h2><span>{{ spec }}{% if data.calibration %} · {{ data.calibration.settings.length_mm|metres }} m{% endif %}</span></header>
+    <main>
+      {% if section != 'certificate' %}{% include 'input.html' %}{% endif %}
+      {% if error %}<article class="panel issue" role="alert">{{ error }}。检查轨迹原件。</article>{% endif %}
+      {% if frames %}{% include 'frame.html' %}{% endif %}
+      {% if data %}
+        {% if section in ['trace','calibration'] %}{% include 'intake.html' %}{% endif %}
+        {% if section in ['pairs','loss','design'] %}{% include 'observations.html' %}{% endif %}
+      {% endif %}
+      {% if section in ['archive','certificate'] %}{% include 'archive.html' %}{% endif %}
+    </main>
+    <footer><span>{{ spec }}</span><span>基准 A → B · m / dB</span><a href="/healthz">探测状态</a></footer>
+  </div>
+</body></html>

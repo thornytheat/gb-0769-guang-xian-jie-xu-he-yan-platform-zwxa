@@ -1,0 +1,10 @@
+name: fiber-splice
+services:
+  app:
+    build: .
+    ports:
+      - "18468:8000"
+    volumes:
+      - inspections:/var/lib/fiber
+volumes:
+  inspections:

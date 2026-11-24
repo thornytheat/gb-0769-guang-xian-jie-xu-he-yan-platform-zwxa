@@ -1,0 +1,4 @@
+event,distance,unit,loss_db
+SA-1,105,m,0.12
+SA-2,305,m,0.17
+SA-3,455,m,0.19

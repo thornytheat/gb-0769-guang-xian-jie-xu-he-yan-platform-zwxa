@@ -1,0 +1,8 @@
+{% if section == 'trace' %}
+<section class="panel"><h3>$ 原件矩阵</h3><div class="sheet"><table><thead><tr><th>文件</th><th>正文</th><th>分段</th><th>采信</th><th>隔离</th><th>状态</th></tr></thead><tbody>{% for key,row in data.trace.counts.items() %}<tr><td>{{ key }}.csv</td><td>{{ row.input }}</td><td>{{ row.sections }}</td><td>{{ row.accepted }}</td><td>{{ row.isolated }}</td><td>{{ row.state }}</td></tr>{% endfor %}</tbody></table></div></section>
+<section class="panel"><h3>$ 原行隔离</h3><div class="sheet"><table><thead><tr><th>文件</th><th>原行</th><th>原因</th><th>原值</th></tr></thead><tbody>{% for row in data.trace.isolated %}<tr><td>{{ row.source }}</td><td>{{ row.line }}</td><td>{{ row.code }}</td><td>{{ row.raw|join(' / ') }}</td></tr>{% else %}<tr><td colspan="4">没有待隔离记录。</td></tr>{% endfor %}</tbody></table></div></section>
+{% else %}
+<section class="panel"><h3>$ 校准刻度明细</h3><div class="sheet"><table><thead><tr><th>来源</th><th>编号</th><th>行号</th><th>采集坐标 (m)</th><th>A 端链程 (m)</th><th>状态</th></tr></thead><tbody>
+{% for row in data.calibration.aligned.a + data.calibration.aligned.b + data.calibration.aligned.design + data.calibration.outliers %}<tr><td>{{ row.source|upper }}</td><td>{{ row.id }}</td><td>{{ row.line }}</td><td class="num">{{ row.mm|metres }}</td><td class="num">{{ row.chain_mm|metres }}</td><td>{{ row.code or 'ALIGNED' }}</td></tr>{% else %}<tr><td colspan="6">提供轨迹后校准。</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endif %}

@@ -1,0 +1,11 @@
+<form class="command" method="post">
+  <span class="prompt" aria-hidden="true">$</span><label for="fiber-data">轨迹组</label>
+  <select name="sample" id="fiber-data"><option value="dirty" {{ 'selected' if mode == 'dirty' }}>跨端误差链路</option><option value="clean" {{ 'selected' if mode == 'clean' }}>标准双向链路</option><option value="custom" {{ 'selected' if mode == 'custom' }}>自填轨迹</option></select>
+  <button id="fiber-run">{{ '留档 / 重跑' if section == 'archive' else '运行核验' }}</button><output id="request-state" aria-live="polite"></output>
+  <details id="fiber-source" {% if mode == 'custom' %}open{% endif %}><summary>轨迹与校准参数</summary>
+    <div class="edit">
+    {% for key in fields %}<label>{{ {'length_m':'全长 m','zero_a_m':'A 起偏 m','zero_b_m':'B 起偏 m','pair_tol_m':'配对容差 m','design_tol_m':'设计容差 m','reference_limit_db':'参考损耗 dB'}[key] }}<input name="{{ key }}" value="{{ materials.settings.get(key,'') if materials.settings else '' }}"></label>{% endfor %}
+    {% for key in ['a','b','design'] %}<label class="source-file">{{ key }}.csv<textarea name="{{ key }}" rows="5" spellcheck="false">{{ materials.traces.get(key,'') if materials.traces else '' }}</textarea></label>{% endfor %}
+    </div>
+  </details>
+</form>

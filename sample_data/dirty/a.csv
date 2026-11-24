@@ -1,0 +1,15 @@
+﻿event,distance,unit,loss_db
+A-05,0.8,km,-0.05
+A-01,0.200,km,-0.100
+A-03,400,m,0.33
+A-02,205,m,0.160
+A-04,600,m,0.170
+event,distance,unit,loss_db
+A-06,1,km,0.15
+A-02,0.205,km,0.16
+A-C,680,m,0.24
+A-C,684,m,0.24
+A-X,50,m,0.16
+A-N,0.320,km,N/A
+A-Y,0.420,km,0.20,extra
+
